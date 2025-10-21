@@ -343,6 +343,124 @@ Public Function InformationRatio(PortfolioReturns As Range, BenchmarkReturns As 
     InformationRatio = activeReturnAnnual / te
 End Function
 
+Public Function UpCaptureRatio(PortfolioReturns As Range, BenchmarkReturns As Range, PeriodsPerYear As Double) As Variant
+    Dim portfolio As Variant, benchmark As Variant
+    Dim hasError As Boolean
+    Dim portFiltered() As Double, benchFiltered() As Double
+    Dim count As Long, i As Long
+    Dim portfolioAnnual As Double, benchmarkAnnual As Double
+
+    portfolio = RangeToVector(PortfolioReturns, hasError)
+    If hasError Then
+        UpCaptureRatio = CVErr(xlErrValue)
+        Exit Function
+    End If
+
+    benchmark = RangeToVector(BenchmarkReturns, hasError)
+    If hasError Then
+        UpCaptureRatio = CVErr(xlErrValue)
+        Exit Function
+    End If
+
+    If Not ValidateMatchingLengths(portfolio, benchmark) Then
+        UpCaptureRatio = CVErr(xlErrValue)
+        Exit Function
+    End If
+
+    If PeriodsPerYear <= 0 Then
+        UpCaptureRatio = CVErr(xlErrDiv0)
+        Exit Function
+    End If
+
+    ReDim portFiltered(1 To UBound(portfolio))
+    ReDim benchFiltered(1 To UBound(benchmark))
+    count = 0
+
+    For i = 1 To UBound(benchmark)
+        If benchmark(i) > 0 Then
+            count = count + 1
+            portFiltered(count) = portfolio(i)
+            benchFiltered(count) = benchmark(i)
+        End If
+    Next i
+
+    If count = 0 Then
+        UpCaptureRatio = CVErr(xlErrDiv0)
+        Exit Function
+    End If
+
+    ReDim Preserve portFiltered(1 To count)
+    ReDim Preserve benchFiltered(1 To count)
+
+    portfolioAnnual = GeometricAnnualizedReturn(portFiltered, PeriodsPerYear)
+    benchmarkAnnual = GeometricAnnualizedReturn(benchFiltered, PeriodsPerYear)
+
+    If benchmarkAnnual = 0 Then
+        UpCaptureRatio = CVErr(xlErrDiv0)
+    Else
+        UpCaptureRatio = portfolioAnnual / benchmarkAnnual
+    End If
+End Function
+
+Public Function DownCaptureRatio(PortfolioReturns As Range, BenchmarkReturns As Range, PeriodsPerYear As Double) As Variant
+    Dim portfolio As Variant, benchmark As Variant
+    Dim hasError As Boolean
+    Dim portFiltered() As Double, benchFiltered() As Double
+    Dim count As Long, i As Long
+    Dim portfolioAnnual As Double, benchmarkAnnual As Double
+
+    portfolio = RangeToVector(PortfolioReturns, hasError)
+    If hasError Then
+        DownCaptureRatio = CVErr(xlErrValue)
+        Exit Function
+    End If
+
+    benchmark = RangeToVector(BenchmarkReturns, hasError)
+    If hasError Then
+        DownCaptureRatio = CVErr(xlErrValue)
+        Exit Function
+    End If
+
+    If Not ValidateMatchingLengths(portfolio, benchmark) Then
+        DownCaptureRatio = CVErr(xlErrValue)
+        Exit Function
+    End If
+
+    If PeriodsPerYear <= 0 Then
+        DownCaptureRatio = CVErr(xlErrDiv0)
+        Exit Function
+    End If
+
+    ReDim portFiltered(1 To UBound(portfolio))
+    ReDim benchFiltered(1 To UBound(benchmark))
+    count = 0
+
+    For i = 1 To UBound(benchmark)
+        If benchmark(i) < 0 Then
+            count = count + 1
+            portFiltered(count) = portfolio(i)
+            benchFiltered(count) = benchmark(i)
+        End If
+    Next i
+
+    If count = 0 Then
+        DownCaptureRatio = CVErr(xlErrDiv0)
+        Exit Function
+    End If
+
+    ReDim Preserve portFiltered(1 To count)
+    ReDim Preserve benchFiltered(1 To count)
+
+    portfolioAnnual = GeometricAnnualizedReturn(portFiltered, PeriodsPerYear)
+    benchmarkAnnual = GeometricAnnualizedReturn(benchFiltered, PeriodsPerYear)
+
+    If benchmarkAnnual = 0 Then
+        DownCaptureRatio = CVErr(xlErrDiv0)
+    Else
+        DownCaptureRatio = portfolioAnnual / benchmarkAnnual
+    End If
+End Function
+
 Public Function BetaCoefficient(PortfolioReturns As Range, BenchmarkReturns As Range) As Variant
     Dim portfolio As Variant, benchmark As Variant
     Dim hasError As Boolean
@@ -423,6 +541,55 @@ Public Function RollingBeta(PortfolioReturns As Range, BenchmarkReturns As Range
     Next i
 
     RollingBeta = result
+End Function
+
+Public Function TreynorRatio(PortfolioReturns As Range, BenchmarkReturns As Range, RiskFreeRate As Double, PeriodsPerYear As Double) As Variant
+    Dim portfolio As Variant, benchmark As Variant
+    Dim hasError As Boolean
+    Dim betaVal As Double
+    Dim benchVar As Double
+    Dim excessReturn As Double
+    Dim portfolioAnnual As Double
+
+    portfolio = RangeToVector(PortfolioReturns, hasError)
+    If hasError Then
+        TreynorRatio = CVErr(xlErrValue)
+        Exit Function
+    End If
+
+    benchmark = RangeToVector(BenchmarkReturns, hasError)
+    If hasError Then
+        TreynorRatio = CVErr(xlErrValue)
+        Exit Function
+    End If
+
+    If Not ValidateMatchingLengths(portfolio, benchmark) Then
+        TreynorRatio = CVErr(xlErrValue)
+        Exit Function
+    End If
+
+    If PeriodsPerYear <= 0 Then
+        TreynorRatio = CVErr(xlErrDiv0)
+        Exit Function
+    End If
+
+    benchVar = SampleVariance(benchmark)
+    If benchVar = 0 Then
+        TreynorRatio = CVErr(xlErrDiv0)
+        Exit Function
+    End If
+
+    betaVal = SampleCovariance(portfolio, benchmark) / benchVar
+
+    If betaVal = 0 Then
+        TreynorRatio = CVErr(xlErrDiv0)
+        Exit Function
+    End If
+
+    portfolioAnnual = GeometricAnnualizedReturn(portfolio, PeriodsPerYear)
+    excessReturn = portfolioAnnual - RiskFreeRate
+
+    TreynorRatio = excessReturn / betaVal
 End Function
 
 Public Function AlphaCoefficient(PortfolioReturns As Range, BenchmarkReturns As Range, RiskFreeRate As Double, PeriodsPerYear As Double) As Variant

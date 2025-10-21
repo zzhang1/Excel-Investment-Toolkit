@@ -19,8 +19,11 @@ All functions expect periodic returns expressed as decimals (e.g., 0.01 for 1%).
 | `SortinoRatio(Returns, RiskFreeRate, PeriodsPerYear [, MinimumAcceptableReturn])` | Annualized Sortino ratio using the risk-free rate or custom MAR. |
 | `TrackingError(PortfolioReturns, BenchmarkReturns, PeriodsPerYear)` | Annualized tracking error between two return series. |
 | `InformationRatio(PortfolioReturns, BenchmarkReturns, PeriodsPerYear)` | Information ratio using geometric annualized active return and tracking error. |
+| `UpCaptureRatio(PortfolioReturns, BenchmarkReturns, PeriodsPerYear)` | Ratio of portfolio to benchmark annualized returns during periods when the benchmark is positive. |
+| `DownCaptureRatio(PortfolioReturns, BenchmarkReturns, PeriodsPerYear)` | Ratio of portfolio to benchmark annualized returns during periods when the benchmark is negative. |
 | `BetaCoefficient(PortfolioReturns, BenchmarkReturns)` | Sample beta of the portfolio versus its benchmark. |
 | `RollingBeta(PortfolioReturns, BenchmarkReturns, WindowLength)` | Rolling beta series. |
+| `TreynorRatio(PortfolioReturns, BenchmarkReturns, RiskFreeRate, PeriodsPerYear)` | Treynor ratio using annualized returns and beta-based systematic risk. |
 | `AlphaCoefficient(PortfolioReturns, BenchmarkReturns, RiskFreeRate, PeriodsPerYear)` | Annualized Jensen alpha based on beta and benchmark returns. |
 | `JensenAlpha(...)` | Alias for `AlphaCoefficient`. |
 | `DownsideDeviationSeries(Returns, MinimumAcceptableReturn, PeriodsPerYear, WindowLength)` | Rolling annualized downside deviation relative to a MAR. |
