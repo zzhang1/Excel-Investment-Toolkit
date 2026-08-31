@@ -43,8 +43,8 @@ Open `CashFlowExample.csv`. It contains a valuation series and interval external
 =TimeWeightedReturn(B2:B5,A2:A5,C3:C5,"END")
 ```
 
-For Modified Dietz, use the beginning and ending values plus actual dated external cash flows:
+For Modified Dietz, dated cash flows are in `E2:E3` and their dates are in `D2:D3`:
 
 ```excel
-=ModifiedDietzReturn(1000000,1075000,F2:F3,E2:E3,DATE(2026,1,1),DATE(2026,3,31),"ACTUAL")
+=ModifiedDietzReturn(1000000,1075000,E2:E3,D2:D3,DATE(2026,1,1),DATE(2026,3,31),"ACTUAL")
 ```
